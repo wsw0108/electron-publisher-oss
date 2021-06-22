@@ -1,0 +1,27 @@
+{
+    "name": "electron-publisher-oss",
+    "version": "0.1.0",
+    "description": "",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "scripts": {
+        "build": "tsc"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/wsw0108/electron-publisher-oss.git"
+    },
+    "author": "wsw0108@gmail.com",
+    "license": "Apache-2.0",
+    "bugs": {
+        "url": "https://github.com/wsw0108/electron-publisher-oss/issues"
+    },
+    "homepage": "https://github.com/wsw0108/electron-publisher-oss#readme",
+    "dependencies": {
+        "builder-util": "^22.11.7",
+        "electron-publish": "^22.11.7"
+    },
+    "devDependencies": {
+        "typescript": "^4.3.4"
+    }
+}
