@@ -18,10 +18,16 @@
     },
     "homepage": "https://github.com/wsw0108/electron-publisher-oss#readme",
     "dependencies": {
+        "ali-oss": "^6.15.2",
         "builder-util": "^22.11.7",
-        "electron-publish": "^22.11.7"
+        "electron-publish": "^22.11.7",
+        "untildify": "^4.0.0",
+        "yaml": "^1.10.2"
     },
     "devDependencies": {
+        "@types/ali-oss": "^6.0.8",
+        "@types/untildify": "^4.0.0",
+        "@types/yaml": "^1.9.7",
         "typescript": "^4.3.4"
     }
 }

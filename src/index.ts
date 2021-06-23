@@ -1,37 +1,65 @@
-import { HttpPublisher, PublishContext, PublishOptions, UploadTask } from 'electron-publish';
-import { ClientRequest } from 'http';
-import { Arch } from 'builder-util';
+import fs from 'fs';
+import path from 'path';
+import { Publisher, PublishContext, PublishOptions, UploadTask } from 'electron-publish';
+import untildify from 'untildify';
+import { default as OSS } from 'ali-oss';
+import YAML from 'yaml';
 
 export interface OSSOptions extends PublishOptions {
     readonly provider: "oss"
-    readonly credentials: string
+    readonly credentials?: string
     readonly bucket: string
     readonly base: string
-    readonly endpoints?: string | null
+    readonly region?: string
+    readonly endpoint?: string
+    readonly secure: boolean
 }
 
-export default class OSSPublisher extends HttpPublisher {
-    readonly providerName = "OSS";
+interface Credentials {
+    readonly accessKeyId: string
+    readonly accessKeySecret: string
+    readonly region?: string
+    readonly endpoint?: string
+}
+
+export default class OSSPublisher extends Publisher {
+    public readonly providerName = "OSS";
+    protected client: OSS;
 
     constructor(context: PublishContext, private options: OSSOptions) {
         super(context);
+        const credentialsFile: string = untildify(this.options.credentials || "~/.fcli/config.yaml");
+        const credentials = this.parseCredentials(credentialsFile);
+        const clientOpts: OSS.Options = {
+            accessKeyId: credentials.accessKeyId,
+            accessKeySecret: credentials.accessKeySecret,
+            bucket: this.options.bucket,
+            region: this.options.region || credentials.region,
+            endpoint: this.options.endpoint || credentials.endpoint,
+            secure: this.options.secure
+        }
+        this.client = new OSS(clientOpts);
+    }
+
+    parseCredentials(file: string): Credentials {
+        const content = fs.readFileSync(file, 'utf8');
+        const doc = YAML.parse(content);
+        return {
+            accessKeyId: doc.access_key_id,
+            accessKeySecret: doc.access_key_secret
+        };
     }
 
     async upload(task: UploadTask): Promise<any> {
-        return super.upload(task);
-    }
-
-    protected async doUpload(fileName: string, arch: Arch, dataLength: number, requestProcessor: (request: ClientRequest, reject: (error: Error) => void) => void) {
-        console.log(fileName);
-        console.log(arch);
-        console.log(dataLength);
-    }
-
-    protected getBucketName(): string {
-        return this.options.bucket;
+        // TODO: safeArtifactName?
+        const fileName = path.basename(task.file);
+        const name = this.options.base + "/" + fileName;
+        // TODO: use progress bar from Publisher
+        const stream = fs.createReadStream(task.file);
+        return await this.client.putStream(name, stream);
     }
 
     toString() {
-        return `${this.providerName} (bucket: ${this.getBucketName()})`;
+        return `${this.providerName} (bucket: ${this.options.bucket})`;
     }
 }
