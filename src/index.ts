@@ -1,11 +1,12 @@
 import fs from 'fs';
 import path from 'path';
-import { Publisher, PublishContext, PublishOptions, UploadTask } from 'electron-publish';
+import { Publisher, PublishContext, UploadTask } from 'electron-publish';
+import { log } from 'builder-util';
 import untildify from 'untildify';
-import { default as OSS } from 'ali-oss';
+import OSS from 'ali-oss';
 import YAML from 'yaml';
 
-export interface OSSOptions extends PublishOptions {
+export interface OSSOptions {
     readonly provider: "oss"
     readonly credentials?: string
     readonly bucket: string
@@ -53,9 +54,12 @@ export default class OSSPublisher extends Publisher {
     async upload(task: UploadTask): Promise<any> {
         // TODO: safeArtifactName?
         const fileName = path.basename(task.file);
+        const fileStat = await fs.promises.stat(task.file);
+        const progressBar = this.createProgressBar(fileName, fileStat.size);
         const name = this.options.base + "/" + fileName;
-        // TODO: use progress bar from Publisher
-        const stream = fs.createReadStream(task.file);
+        const stream = this.createReadStreamAndProgressBar(task.file, fileStat, progressBar, err => {
+            log.error(err);
+        });
         return await this.client.putStream(name, stream);
     }
 
