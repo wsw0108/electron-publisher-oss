@@ -20,8 +20,8 @@
     "homepage": "https://github.com/wsw0108/electron-publisher-oss#readme",
     "dependencies": {
         "ali-oss": "^6.15.2",
-        "builder-util": "^22.11.7",
-        "electron-publish": "^22.11.7",
+        "builder-util": "^22.10.5",
+        "electron-publish": "^22.10.5",
         "untildify": "^4.0.0",
         "yaml": "^1.10.2"
     },
